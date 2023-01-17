@@ -5,6 +5,7 @@ flask-swagger-ui==4.11.1
 Flask-Limiter==2.6.3
 Flask-Babel==2.0.0
 Flask-Session==0.4.0
+Flask-cors==3.0.10
 waitress==2.1.2
 expiringdict==1.2.2
 LTpycld2==0.42
