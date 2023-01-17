@@ -17,10 +17,11 @@ from translatehtml import translate_html
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import HTTPException
 from flask_babel import Babel
+from flask_cors import CORS
 
 from libretranslate import flood, remove_translated_files, security
 from libretranslate.language import detect_languages, improve_translation_formatting
-from libretranslate.locales import (_, _lazy, get_available_locales, get_available_locale_codes, gettext_escaped, 
+from libretranslate.locales import (_, _lazy, get_available_locales, get_available_locale_codes, gettext_escaped,
         gettext_html, lazy_swag, get_alternate_locale_links)
 
 from .api_keys import Database, RemoteDatabase
@@ -135,7 +136,7 @@ def create_app(args):
     if frontend_argos_language_source is None:
         frontend_argos_language_source = languages[0]
 
-    
+
     if len(languages) >= 2:
         language_target_fallback = languages[1]
     else:
@@ -246,7 +247,7 @@ def create_app(args):
                         description=description,
                     )
             return f(*a, **kw)
-        
+
         if args.metrics:
           @wraps(func)
           def measure_func(*a, **kw):
@@ -268,7 +269,7 @@ def create_app(args):
           return measure_func
         else:
           return func
-    
+
     @bp.errorhandler(400)
     def invalid_api(e):
         return jsonify({"error": str(e.description)}), 400
@@ -316,7 +317,7 @@ def create_app(args):
       if args.disable_web_ui:
             abort(404)
 
-      return Response(render_template("app.js.template", 
+      return Response(render_template("app.js.template",
             url_prefix=args.url_prefix,
             get_api_key_link=args.get_api_key_link), content_type='application/javascript; charset=utf-8')
 
@@ -355,9 +356,7 @@ def create_app(args):
     @bp.after_request
     def after_request(response):
         response.headers.add("Access-Control-Allow-Origin", "*")
-        response.headers.add(
-            "Access-Control-Allow-Headers", "Authorization, Content-Type"
-        )
+        response.headers.add("Access-Control-Allow-Headers", "Authorization, Content-Type")
         response.headers.add("Access-Control-Expose-Headers", "Authorization")
         response.headers.add("Access-Control-Allow-Methods", "GET, POST")
         response.headers.add("Access-Control-Allow-Credentials", "true")
@@ -1012,6 +1011,7 @@ def create_app(args):
         return jsonify({"success": True})
 
     app = Flask(__name__)
+    cors = CORS(app, resources={r"/*": {"origins": "http://localhost:*"}})
 
     app.config["SESSION_TYPE"] = "filesystem"
     app.config["SESSION_FILE_DIR"] = os.path.join("db", "sessions")
@@ -1023,7 +1023,7 @@ def create_app(args):
         app.register_blueprint(bp, url_prefix=args.url_prefix)
     else:
         app.register_blueprint(bp)
-    
+
     limiter.init_app(app)
 
     swag = swagger(app)
